@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TASKS Pro - Gestor Integral</title>
+  <meta name="theme-color" content="#0ea5e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TASKS">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div id="login-screen" class="screen active">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon"><span></span><span></span><span></span></div>
+        <span>TASKS</span>
+      </div>
+    </header>
+    <main class="login-main">
+      <div class="login-card">
+        <h1 id="auth-title"><span class="accent">Iniciar</span> sesión</h1>
+        <p class="subtitle" id="auth-subtitle">Planifica tu semana y cumple tus objetivos</p>
+
+        <form id="login-form" style="display: block;">
+          <input type="text" id="login-username" placeholder="Usuario" required autocomplete="username">
+          <input type="password" id="login-password" placeholder="Contraseña" required autocomplete="current-password">
+          <button type="submit" class="btn-primary">Entrar</button>
+          <p class="auth-switch">¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
+        </form>
+
+        <form id="register-form" style="display: none;">
+          <input type="text" id="register-username" placeholder="Usuario" required autocomplete="username" minlength="3">
+          <input type="email" id="register-email" placeholder="Email" required autocomplete="email">
+          <input type="password" id="register-password" placeholder="Contraseña" required autocomplete="new-password" minlength="6">
+          <input type="password" id="register-password-confirm" placeholder="Confirmar contraseña" required autocomplete="new-password" minlength="6">
+          <button type="submit" class="btn-primary">Crear cuenta</button>
+          <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión aquí</a></p>
+        </form>
+
+        <div id="auth-debug-panel" class="auth-debug-panel" style="display: none;">
+          <div class="auth-debug-title">Error de autenticacion</div>
+          <pre id="auth-debug-log"></pre>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="app-screen" class="screen">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><span></span><span></span><span></span></div>
+        <span>TASKS</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="calendario">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+          <span>Calendario</span>
+        </button>
+        <button class="nav-item" data-view="objetivos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <span>Objetivos</span>
+        </button>
+        <button class="nav-item" data-view="gym">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M6.5 6.5L12 12l5.5-5.5"/><path d="M6.5 17.5L12 12l5.5 5.5"/></svg>
+          <span>GYM</span>
+        </button>
+        <button class="nav-item" data-view="ejercicios">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>Ejercicios</span>
+        </button>
+        <button class="nav-item" data-view="cronometro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Cronómetro</span>
+        </button>
+        <button class="nav-item" data-view="analisis">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/><path d="M9 17V9"/><path d="M15 17v-5"/><path d="M12 17v-1"/></svg>
+          <span>Análisis</span>
+        </button>
+        <button class="nav-item" data-view="progreso">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span>Progreso</span>
+        </button>
+        <button class="nav-item" data-view="misdatos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Mis Datos</span>
+        </button>
+        <div class="sidebar-footer">
+          <button class="nav-item" data-view="config">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Configuración</span>
+          </button>
+          <button class="nav-item nav-item-logout" id="logout-btn" title="Cerrar sesión">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Salir</span>
+          </button>
+        </div>
+      </nav>
+    </aside>
+
+    <div class="main-content">
+      <div id="notifications-container" class="notifications-container"></div>
+
+      <main class="dashboard-content">
+        <section id="view-dashboard" class="view active">
+          <div class="section-header">
+            <h3><span class="accent">Dashboard</span></h3>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span class="stat-value" id="stat-hoy">0</span>
+              <span class="stat-label">Tareas hoy</span>
+            </div>
+            
+            <div class="stat-card">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+              </svg>
+              <span class="stat-value" id="stat-racha">0</span>
+              <span class="stat-label">Racha de días</span>
+            </div>
+            
+            
+            <div class="stat-card">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span class="stat-value" id="stat-atrasadas">0</span>
+              <span class="stat-label">Tareas atrasadas</span>
+            </div>
+            <div class="stat-card">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span class="stat-value" id="stat-total-completadas">0</span>
+              <span class="stat-label">Total completadas</span>
+            </div>
+            
+            
+            
+            <div class="stat-card">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+              </svg>
+              <span class="stat-value" id="stat-completadas-semana">0</span>
+              <span class="stat-label">Completadas esta semana</span>
+            </div>
+            <div class="stat-card">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+              <span class="stat-value" id="stat-objetivos-completados">0</span>
+              <span class="stat-label">Objetivos cumplidos</span>
+            </div>
+          </div>
+
+          <!-- Gráficas del Dashboard (removidas) -->
+
+          <div class="dashboard-sections">
+            <div class="dashboard-card">
+              <h3><span class="accent">Próximas</span> tareas</h3>
+              <div id="dashboard-proximas" class="task-list-mini"></div>
+            </div>
+              <div class="dashboard-card">
+                <h3><span class="accent">Objetivos</span> próximos</h3>
+                <div class="dashboard-objetivos-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                  <select id="dashboard-objetivos-filter">
+                    <option value="proximos">Próximos</option>
+                    <option value="en-curso">En curso</option>
+                    <option value="completados">Completados</option>
+                    <option value="todos">Mis objetivos</option>
+                  </select>
+                  <button class="btn-secondary btn-sm" id="ver-mis-objetivos-btn">Ver todos</button>
+                </div>
+                <div id="dashboard-objetivos" class="objetivos-mini"></div>
+              </div>
+            <div class="dashboard-card">
+              <h3><span class="accent">Resumen</span> semanal</h3>
+              <div id="dashboard-resumen" class="week-mini"></div>
+            </div>
+          </div>
+        </section>
+        <section id="view-calendario" class="view">
+          <div class="calendar-header">
+            <button class="btn-icon" id="cal-prev">‹</button>
+            <h3 id="cal-month-year">Febrero 2025</h3>
+            <button class="btn-icon" id="cal-next">›</button>
+            <button class="btn-secondary btn-sm" id="cal-today">Hoy</button>
+          </div>
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-dot high"></span>Alta prioridad</span>
+            <span class="legend-item"><span class="legend-dot medium"></span>Media prioridad</span>
+            <span class="legend-item"><span class="legend-dot low"></span>Baja prioridad</span>
+            <span class="legend-item"><span class="legend-dot completed"></span>Día completado</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+          <div class="calendar-tasks" id="calendar-day-tasks"></div>
+        </section>
+
+        <section id="view-objetivos" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Mis</span> objetivos</h3>
+            <button class="btn-primary btn-add-sm" id="add-objetivo-btn">+ Nuevo objetivo</button>
+          </div>
+
+          <div class="objetivos-columns">
+            <div class="objetivos-section">
+              <h4>Objetivos pendientes</h4>
+              <div id="objetivos-pendientes" class="objetivos-list"></div>
+            </div>
+
+            <div class="objetivos-section">
+              <h4>Objetivos cumplidos</h4>
+              <div id="objetivos-cumplidos" class="objetivos-list"></div>
+            </div>
+          </div>
+        </section>
+
+
+        <section id="view-gym" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Rutinas</span> de gym</h3>
+            <div class="gym-header-actions">
+              <button class="btn-primary btn-add-sm" id="add-gym-btn">+ Nueva rutina</button>
+              <button class="btn-secondary btn-add-sm" id="gym-history-btn">📊 Historial</button>
+            </div>
+          </div>
+          <div class="gym-stats-week">
+            <div class="gym-stat-card">
+              <span class="gym-stat-label">Entrenamientos esta semana</span>
+              <span class="gym-stat-value" id="gym-week-workouts">0</span>
+            </div>
+            <div class="gym-stat-card">
+              <span class="gym-stat-label">Volumen total (kg)</span>
+              <span class="gym-stat-value" id="gym-week-volume">0</span>
+            </div>
+            <div class="gym-stat-card">
+              <span class="gym-stat-label">Grupos trabajados</span>
+              <span class="gym-stat-value" id="gym-week-groups">-</span>
+            </div>
+          </div>
+          <div class="gym-container" id="gym-container"></div>
+        </section>
+
+        <section id="view-ejercicios" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Biblioteca</span> de ejercicios</h3>
+            <div class="ejercicios-filters">
+              <select id="ejercicios-filter">
+                <option value="">Todos los grupos</option>
+                <option value="pecho">Pecho</option>
+                <option value="espalda">Espalda</option>
+                <option value="piernas">Piernas</option>
+                <option value="hombros">Hombros</option>
+                <option value="brazos">Brazos</option>
+                <option value="core">Core</option>
+              </select>
+            </div>
+          </div>
+          <div id="ejercicios-grid" class="ejercicios-grid"></div>
+        </section>
+
+        <section id="view-analisis" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Análisis</span> de productividad</h3>
+          </div>
+
+          <div class="analisis-container">
+            <!-- Análisis de mejoras -->
+            <div class="mejoras-section">
+              <h3><span class="accent">Tus</span> mejoras</h3>
+              <div class="mejoras-grid">
+                <div class="mejora-card">
+                  <div class="mejora-icon mejora-up">↑</div>
+                  <div class="mejora-content">
+                    <span class="mejora-value" id="mejora-tareas-completadas">--</span>
+                    <span class="mejora-label">Más tareas completadas</span>
+                    <span class="mejora-comparacion" id="mejora-tareas-comparacion">vs. semana anterior</span>
+                  </div>
+                </div>
+                <div class="mejora-card">
+                  <div class="mejora-icon mejora-up">↑</div>
+                  <div class="mejora-content">
+                    <span class="mejora-value" id="mejora-racha">--</span>
+                    <span class="mejora-label">Días de racha</span>
+                    <span class="mejora-comparacion" id="mejora-racha-comparacion">Mejor racha: --</span>
+                  </div>
+                </div>
+                <div class="mejora-card">
+                  <div class="mejora-icon mejora-neutral">→</div>
+                  <div class="mejora-content">
+                    <span class="mejora-value" id="mejora-puntualidad">--</span>
+                    <span class="mejora-label">Puntualidad</span>
+                    <span class="mejora-comparacion" id="mejora-puntualidad-comparacion">Tareas a tiempo</span>
+                  </div>
+                </div>
+                <div class="mejora-card">
+                  <div class="mejora-icon mejora-neutral">⏱️</div>
+                  <div class="mejora-content">
+                    <span class="mejora-value" id="mejora-tiempo-promedio">--</span>
+                    <span class="mejora-label">Tiempo medio por tarea</span>
+                    <span class="mejora-comparacion" id="mejora-tiempo-comparacion">vs. periodo anterior</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Análisis de hábitos -->
+            <div class="habitos-section">
+              <h3><span class="accent">Análisis</span> de hábitos</h3>
+              <div class="habitos-grid">
+                <div class="habito-card">
+                  <h4>Días más productivos</h4>
+                  <div id="habito-dias-productivos" class="habito-list">
+                    <div class="habito-item">
+                      <span class="habito-dia">Lunes</span>
+                      <div class="habito-bar"><div class="habito-bar-fill" style="width: 0%"></div></div>
+                      <span class="habito-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="habito-card">
+                  <h4>Horas más productivas</h4>
+                  <div id="habito-horas-productivas" class="habito-list">
+                    <div class="habito-item">
+                      <span class="habito-dia">Mañana (6-12h)</span>
+                      <div class="habito-bar"><div class="habito-bar-fill" style="width: 0%"></div></div>
+                      <span class="habito-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="habito-card">
+                  <h4>Categorías favoritas</h4>
+                  <div id="habito-categorias" class="habito-list">
+                    <div class="habito-item">
+                      <span class="habito-dia">Sin categoría</span>
+                      <div class="habito-bar"><div class="habito-bar-fill" style="width: 0%"></div></div>
+                      <span class="habito-valor">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progreso mensual -->
+            <div class="progreso-mensual-section">
+              <h3><span class="accent">Evolución</span> mensual</h3>
+              <div class="analisis-card">
+                <canvas id="chart-monthly-progress"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CRONOMETRO -->
+        <section id="view-cronometro" class="view">
+          <div class="section-header">
+            <h3><span class="accent"></span> Cronómetro</h3>
+          </div>
+
+          <div class="cronometro-container">
+            <div class="cronometro-main">
+              <div class="cronometro-mode-selector">
+                <button class="cronometro-mode-btn active" data-mode="preset" data-seconds="60">1:00</button>
+                <button class="cronometro-mode-btn" data-mode="preset" data-seconds="90">1:30</button>
+                <button class="cronometro-mode-btn" data-mode="preset" data-seconds="120">2:00</button>
+                <button class="cronometro-mode-btn" data-mode="custom">Personalizado</button>
+              </div>
+
+              <div class="cronometro-custom-input" id="cronometro-custom-input" style="display: none;">
+                <input type="number" id="cronometro-custom-minutes" placeholder="Minutos" min="0" max="180" value="1">
+                <input type="number" id="cronometro-custom-seconds" placeholder="Segundos" min="0" max="59" value="0">
+                <button id="cronometro-set-custom" class="btn-secondary">Establecer</button>
+              </div>
+
+              <div class="cronometro-timer-circle">
+                <svg class="cronometro-progress-ring" width="320" height="320">
+                  <circle class="cronometro-progress-ring-bg" stroke="#2a2a2a" stroke-width="10" fill="transparent" r="150" cx="160" cy="160"/>
+                  <circle id="cronometro-progress-ring-fill" class="cronometro-progress-ring-fill" stroke="#3b82f6" stroke-width="10" fill="transparent" r="150" cx="160" cy="160"/>
+                </svg>
+                <div class="cronometro-timer-display">
+                  <span id="cronometro-timer">01:00</span>
+                </div>
+              </div>
+
+              <div class="cronometro-controls">
+                <button id="cronometro-start" class="btn-primary cronometro-btn-large">Iniciar</button>
+                <button id="cronometro-reset" class="btn-secondary cronometro-btn-large">Resetear</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-config" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Configuración</span></h3>
+          </div>
+          <div class="config-container">
+            <div class="config-card">
+              <h3><span class="accent">General</span></h3>
+              <div class="config-options">
+                <div class="config-item">
+                  <label>Empezar semana en</label>
+                  <select id="config-inicio-semana">
+                    <option value="0">Lunes</option>
+                    <option value="6">Domingo</option>
+                  </select>
+                </div>
+                <div class="config-item">
+                  <label>Mostrar fines de semana</label>
+                  <input type="checkbox" id="config-fines-semana" checked>
+                </div>
+                <div class="config-item">
+                  <label>Notificaciones</label>
+                  <input type="checkbox" id="config-notificaciones" checked>
+                </div>
+                <div class="config-item config-item-stack">
+                  <label>Notificaciones móviles (PWA)</label>
+                  <p id="push-status-text" class="config-help">
+                    Preparando estado de notificaciones...
+                  </p>
+                  <input
+                    type="text"
+                    id="push-vapid-key"
+                    class="config-input"
+                    placeholder="Clave pública VAPID (opcional para push remoto)"
+                    autocomplete="off"
+                  >
+                  <div class="config-actions">
+                    <button type="button" class="btn-secondary" id="enable-push-btn">Activar notificaciones</button>
+                    <button type="button" class="btn-secondary" id="test-push-btn">Probar notificación</button>
+                    <button type="button" class="btn-secondary" id="install-app-btn" style="display:none;">Instalar app</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="config-card">
+              <h3><span class="accent">Datos</span></h3>
+              <div class="config-options">
+                <button class="btn-secondary" id="export-data-btn">📥 Exportar Datos</button>
+                <button class="btn-secondary" id="import-data-btn">📤 Importar Datos</button>
+                <button class="btn-secondary btn-danger" id="clear-data-btn">🗑️ Limpiar Todo</button>
+                <input type="file" id="import-file" accept=".json" style="display:none;">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-misdatos" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Mis</span> Datos</h3>
+          </div>
+          <div class="misdatos-container">
+            <div class="misdatos-card">
+              <h3><span class="accent">Información</span> Personal</h3>
+              <form id="misdatos-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-nombre">Nombre completo</label>
+                    <input type="text" id="misdatos-nombre" placeholder="Tu nombre">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-edad">Edad</label>
+                    <input type="number" id="misdatos-edad" placeholder="Años" min="1" max="120">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-genero">Género</label>
+                    <select id="misdatos-genero">
+                      <option value="">Seleccionar</option>
+                      <option value="masculino">Masculino</option>
+                      <option value="femenino">Femenino</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-fecha-nacimiento">Fecha de nacimiento</label>
+                    <input type="date" id="misdatos-fecha-nacimiento">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-altura">Altura (cm)</label>
+                    <input type="number" id="misdatos-altura" placeholder="170" min="50" max="250">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-peso">Peso (kg)</label>
+                    <input type="number" id="misdatos-peso" placeholder="70" min="20" max="300" step="0.1">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-objetivo">Objetivo principal</label>
+                    <select id="misdatos-objetivo">
+                      <option value="">Seleccionar</option>
+                      <option value="perder-peso">Perder peso</option>
+                      <option value="ganar-musculo">Ganar músculo</option>
+                      <option value="mantenimiento">Mantenimiento</option>
+                      <option value="mejorar-salud">Mejorar salud general</option>
+                      <option value="rendimiento">Mejorar rendimiento</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-nivel-actividad">Nivel de actividad</label>
+                    <select id="misdatos-nivel-actividad">
+                      <option value="">Seleccionar</option>
+                      <option value="sedentario">Sedentario</option>
+                      <option value="ligero">Ligeramente activo</option>
+                      <option value="moderado">Moderadamente activo</option>
+                      <option value="activo">Muy activo</option>
+                      <option value="extremo">Extremadamente activo</option>
+                    </select>
+                  </div>
+                </div>
+
+                <h3 style="margin-top: 2rem;"><span class="accent">Información</span> Avanzada</h3>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-grasa-corporal">Grasa corporal (%)</label>
+                    <input type="number" id="misdatos-grasa-corporal" placeholder="15.5" min="0" max="100" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-masa-muscular">Masa muscular (kg)</label>
+                    <input type="number" id="misdatos-masa-muscular" placeholder="60" min="0" max="200" step="0.1">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-grasa-visceral">Grasa visceral (nivel)</label>
+                    <input type="number" id="misdatos-grasa-visceral" placeholder="5" min="0" max="60">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-agua-corporal">Agua corporal (%)</label>
+                    <input type="number" id="misdatos-agua-corporal" placeholder="60" min="0" max="100" step="0.1">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-masa-osea">Masa ósea (kg)</label>
+                    <input type="number" id="misdatos-masa-osea" placeholder="3.2" min="0" max="10" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-metabolismo-basal">Metabolismo basal (kcal)</label>
+                    <input type="number" id="misdatos-metabolismo-basal" placeholder="1800" min="800" max="4000">
+                  </div>
+                </div>
+
+                <h4 style="margin-top: 1.5rem; margin-bottom: 1rem;">Perímetros Corporales (cm)</h4>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-pecho">Pecho</label>
+                    <input type="number" id="misdatos-perimetro-pecho" placeholder="100" min="50" max="200" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-cintura">Cintura</label>
+                    <input type="number" id="misdatos-perimetro-cintura" placeholder="80" min="40" max="200" step="0.1">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-cadera">Cadera</label>
+                    <input type="number" id="misdatos-perimetro-cadera" placeholder="95" min="50" max="200" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-muslo">Muslo</label>
+                    <input type="number" id="misdatos-perimetro-muslo" placeholder="55" min="30" max="100" step="0.1">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-brazo">Brazo (relajado)</label>
+                    <input type="number" id="misdatos-perimetro-brazo" placeholder="35" min="20" max="80" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-antebrazo">Antebrazo</label>
+                    <input type="number" id="misdatos-perimetro-antebrazo" placeholder="28" min="15" max="60" step="0.1">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-pantorrilla">Pantorrilla</label>
+                    <input type="number" id="misdatos-perimetro-pantorrilla" placeholder="38" min="20" max="80" step="0.1">
+                  </div>
+                  <div class="form-group">
+                    <label for="misdatos-perimetro-cuello">Cuello</label>
+                    <input type="number" id="misdatos-perimetro-cuello" placeholder="38" min="20" max="80" step="0.1">
+                  </div>
+                </div>
+
+                <div class="modal-buttons">
+                  <button type="submit" class="btn-primary">💾 Guardar Datos</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="misdatos-stats">
+              <div class="stat-card">
+                <h4>IMC (Índice de Masa Corporal)</h4>
+                <div class="stat-value-large" id="misdatos-imc">--</div>
+                <div class="stat-description" id="misdatos-imc-desc">Ingresa altura y peso</div>
+              </div>
+              <div class="stat-card">
+                <h4>Peso ideal estimado</h4>
+                <div class="stat-value-large" id="misdatos-peso-ideal">--</div>
+                <div class="stat-description">Basado en tu altura</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-progreso" class="view">
+          <div class="section-header">
+            <h3><span class="accent">Mi</span> Progreso</h3>
+            <button class="btn-primary btn-add-sm" id="add-progreso-btn">+ Registrar Progreso</button>
+          </div>
+
+          <!-- Estadísticas de progreso -->
+          <div class="progreso-stats-grid">
+            <div class="progreso-stat-card">
+              <svg class="progreso-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <div class="progreso-stat-content">
+                <span class="progreso-stat-label">Peso Actual</span>
+                <span class="progreso-stat-value" id="progreso-peso-actual">--</span>
+                <span class="progreso-stat-change" id="progreso-cambio-semana">--</span>
+              </div>
+            </div>
+            <div class="progreso-stat-card">
+              <svg class="progreso-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+              </svg>
+              <div class="progreso-stat-content">
+                <span class="progreso-stat-label">Cambio Total</span>
+                <span class="progreso-stat-value" id="progreso-cambio-total">--</span>
+                <span class="progreso-stat-change" id="progreso-desde-inicio">Desde inicio</span>
+              </div>
+            </div>
+            <div class="progreso-stat-card">
+              <svg class="progreso-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <div class="progreso-stat-content">
+                <span class="progreso-stat-label">Cambio Mensual</span>
+                <span class="progreso-stat-value" id="progreso-cambio-mes">--</span>
+                <span class="progreso-stat-change" id="progreso-mes-desc">Último mes</span>
+              </div>
+            </div>
+            <div class="progreso-stat-card">
+              <svg class="progreso-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+              <div class="progreso-stat-content">
+                <span class="progreso-stat-label">Registros</span>
+                <span class="progreso-stat-value" id="progreso-total-registros">0</span>
+                <span class="progreso-stat-change">Total de mediciones</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfica de evolución -->
+          <div class="progreso-evolution-wrapper">
+            <div class="progreso-chart-container">
+              <div class="progreso-chart-card">
+                <h3><span class="accent">Evolución</span> del peso</h3>
+                <div id="progreso-chart-wrapper"></div>
+              </div>
+            </div>
+
+            <!-- Listado de progresos -->
+            <div class="progreso-list-container">
+              <h3><span class="accent">Historial</span> de progresos</h3>
+              <div id="progreso-list" class="progreso-list"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal para añadir progreso -->
+  <div id="progreso-modal" class="modal">
+    <div class="modal-content">
+      <h2><span class="accent">Registrar</span> Progreso</h2>
+      <form id="progreso-form">
+        <div class="form-group">
+          <label for="progreso-fecha">Fecha</label>
+          <input type="date" id="progreso-fecha" required>
+        </div>
+        <div class="form-group">
+          <label for="progreso-peso-input">Peso (kg)</label>
+          <input type="number" id="progreso-peso-input" placeholder="70.5" min="20" max="300" step="0.1" required>
+        </div>
+        <div class="form-group">
+          <label for="progreso-foto">Foto de progreso (opcional)</label>
+          <input type="file" id="progreso-foto" accept="image/*">
+          <div id="progreso-foto-preview" class="progreso-foto-preview"></div>
+        </div>
+        <div class="form-group">
+          <label for="progreso-notas-input">Notas</label>
+          <textarea id="progreso-notas-input" placeholder="¿Cómo te sientes? ¿Algún cambio notable?" rows="3"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="cancel-progreso-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="objetivo-modal" class="modal">
+    <div class="modal-content">
+      <h2><span class="accent">Nuevo</span> objetivo</h2>
+      <form id="objetivo-form">
+        <input type="text" id="objetivo-text" placeholder="¿Cuál es tu objetivo?" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="objetivo-fecha-inicio">Fecha inicio (opcional)</label>
+            <input type="date" id="objetivo-fecha-inicio">
+          </div>
+          <div class="form-group">
+            <label for="objetivo-fecha">Fecha fin (opcional)</label>
+            <input type="date" id="objetivo-fecha" placeholder="Fecha límite (opcional)">
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="cancel-objetivo-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="gym-modal" class="modal">
+    <div class="modal-content modal-extra-wide">
+      <h2><span class="accent">Nueva</span> rutina</h2>
+      <form id="gym-form">
+        <div class="form-row">
+          <select id="gym-day" required>
+            <option value="lunes">Lunes</option>
+            <option value="martes">Martes</option>
+            <option value="miercoles">Miércoles</option>
+            <option value="jueves">Jueves</option>
+            <option value="viernes">Viernes</option>
+            <option value="sabado">Sábado</option>
+            <option value="domingo">Domingo</option>
+          </select>
+          <select id="gym-focus">
+            <option value="pecho">Pecho</option>
+            <option value="espalda">Espalda</option>
+            <option value="piernas">Piernas</option>
+            <option value="hombros">Hombros</option>
+            <option value="brazos">Brazos</option>
+            <option value="core">Core</option>
+            <option value="full">Full body</option>
+            <option value="cardio">Cardio</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="gym-exercise-builder">
+          <div class="gym-exercise-selector">
+            <div class="custom-select-wrapper">
+              <div class="custom-select" id="custom-exercise-select">
+                <span class="custom-select-trigger">Seleccionar ejercicio...</span>
+                <div class="custom-options">
+                  <div class="custom-options-search">
+                    <input type="text" id="gym-exercise-search" class="gym-search-input" placeholder="🔍 Buscar ejercicio..." autocomplete="off">
+                  </div>
+                  <div class="custom-options-list" id="gym-exercise-options"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="gym-selected-exercises" class="gym-selected-exercises"></div>
+        </div>
+
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="cancel-gym-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="gym-workout-modal" class="modal">
+    <div class="modal-content modal-extra-wide">
+      <h2><span class="accent">Registrar</span> entrenamiento</h2>
+      <form id="gym-workout-form">
+        <input type="hidden" id="workout-day">
+        <div id="workout-exercises-list"></div>
+        <div class="form-group">
+          <label>Notas del entrenamiento</label>
+          <textarea id="workout-notes" placeholder="¿Cómo te has sentido? Observaciones..." rows="3"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="cancel-workout-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar entrenamiento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="gym-history-modal" class="modal">
+    <div class="modal-content modal-wide">
+      <h2><span class="accent">Historial</span> de entrenamientos</h2>
+      <div id="gym-history-list"></div>
+      <div class="modal-buttons">
+        <button type="button" class="btn-secondary" id="close-gym-history">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="exercise-info-modal" class="modal">
+    <div class="modal-content modal-exercises">
+      <!-- Contenido dinámico insertado por JavaScript -->
+    </div>
+  </div>
+
+  <div id="logout-modal" class="modal">
+    <div class="modal-content">
+      <h2><span class="accent-red">Cerrar</span> sesión</h2>
+      <p class="logout-warning">¿Estás seguro que quieres cerrar sesión?</p>
+      <div class="modal-buttons">
+        <button type="button" class="btn-secondary" id="cancel-logout-btn">Cancelar</button>
+        <button type="button" class="btn-danger" id="confirm-logout-btn">Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="task-modal" class="modal">
+    <div class="modal-content modal-wide">
+      <h2><span class="accent">Nueva</span> tarea</h2>
+      <form id="task-form">
+        <div class="form-row">
+          <input type="text" id="task-name" placeholder="Nombre de la tarea" required>
+          <input type="date" id="task-date" required>
+        </div>
+        <div class="form-row">
+          <input type="time" id="task-time" required>
+        </div>
+        <div class="form-row">
+          <select id="task-categoria">
+            <option value="">Sin categoría</option>
+            <option value="trabajo">Trabajo</option>
+            <option value="personal">Personal</option>
+            <option value="estudio">Estudio</option>
+            <option value="salud">Salud</option>
+            <option value="otros">Otros</option>
+          </select>
+          <select id="task-prioridad">
+            <option value="media">Prioridad media</option>
+            <option value="alta">Alta</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <input type="number" id="task-estimado" placeholder="Tiempo estimado (min)" min="1">
+        <textarea id="task-descripcion" placeholder="Descripción (opcional)" rows="3"></textarea>
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="cancel-task-btn">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="timer-modal" class="modal">
+    <div class="modal-content">
+      <h2>Timer de Tarea</h2>
+      <div class="timer-display" id="timer-display">25:00</div>
+      <div class="timer-controls">
+        <button class="btn-secondary" id="timer-start">Iniciar</button>
+        <button class="btn-secondary" id="timer-pause" style="display:none;">Pausar</button>
+        <button class="btn-secondary" id="timer-reset">Reiniciar</button>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" id="timer-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notes-modal" class="modal">
+    <div class="modal-content modal-wide">
+      <h2>Notas Rápidas</h2>
+      <div class="notes-list" id="notes-list"></div>
+      <form id="notes-form">
+        <textarea id="note-text" placeholder="Añade una nota..." rows="3"></textarea>
+        <div class="modal-buttons">
+          <button type="submit" class="btn-primary">Añadir Nota</button>
+          <button type="button" class="btn-secondary" id="notes-close">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
